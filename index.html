@@ -21,8 +21,10 @@ fieldset:last-of-type { margin-bottom:0; }
 legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; width:100%; border-bottom:2px solid var(--blue); }
 .field { margin-bottom:12px; }
 .field label { display:block; margin-bottom:4px; font-size:13px; font-weight:600; }
-.field input[type=text], .field input[type=email], .field input[type=tel] { width:100%; padding:9px 10px; border:1px solid #bcc7d3; border-radius:4px; font-size:14px; font-family:inherit; }
-.field input[type=file] { width:100%; font-size:13px; }
+.req { color: #d32f2f; font-weight: bold; } /* Asterisco vermelho */
+.input-error { border: 1px solid #d32f2f !important; background-color: #fff5f5 !important; } /* Destaca o campo com erro */
+.field input[type=text], .field input[type=email], .field input[type=tel] { width:100%; padding:9px 10px; border:1px solid #bcc7d3; border-radius:4px; font-size:14px; font-family:inherit; transition: 0.2s; }
+.field input[type=file] { width:100%; font-size:13px; padding: 4px; border: 1px solid transparent; border-radius: 4px; }
 .field input[type=range] { width:100%; accent-color:var(--blue); }
 .sliders { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
@@ -77,7 +79,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       <fieldset>
         <legend>Foto</legend>
         <div class="field">
-          <label for="foto">Foto de perfil</label>
+          <label for="foto">Foto de perfil <span class="req">*</span></label>
           <input type="file" id="foto" accept="image/*">
         </div>
         <div class="sliders">
@@ -89,16 +91,16 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
       <fieldset>
         <legend>Identificação</legend>
-        <div class="field"><label for="nome">Nome (com título, se houver)</label><input type="text" id="nome" placeholder="Ex: João da Silva"></div>
-        <div class="field"><label for="cargo">Cargo ou função</label><input type="text" id="cargo" placeholder="Ex: Analista de Tecnologia da Informação"></div>
-        <div class="field"><label for="dept">Departamento</label><input type="text" id="dept" placeholder="Ex: Setor de TI"></div>
-        <div class="field"><label for="registro">Matrícula (como no crachá)</label><input type="text" id="registro" placeholder="Ex: 123.456" inputmode="numeric"></div>
+        <div class="field"><label for="nome">Nome (com título, se houver) <span class="req">*</span></label><input type="text" id="nome" placeholder="Ex: João da Silva"></div>
+        <div class="field"><label for="cargo">Cargo ou função <span class="req">*</span></label><input type="text" id="cargo" placeholder="Ex: Analista de Tecnologia da Informação"></div>
+        <div class="field"><label for="dept">Departamento <span class="req">*</span></label><input type="text" id="dept" placeholder="Ex: Setor de TI"></div>
+        <div class="field"><label for="registro">Matrícula (como no crachá) <span class="req">*</span></label><input type="text" id="registro" placeholder="Ex: 123.456" inputmode="numeric"></div>
       </fieldset>
 
       <fieldset>
         <legend>Contato</legend>
         <div class="field"><label for="telefone">Telefone <small style="color:var(--muted);font-weight:400">(opcional)</small></label><input type="tel" id="telefone" placeholder="(81) 90000-0000" inputmode="tel"></div>
-        <div class="field"><label for="email">E-mail</label><input type="email" id="email" placeholder="nome@coren-pe.gov.br"></div>
+        <div class="field"><label for="email">E-mail <span class="req">*</span></label><input type="email" id="email" placeholder="nome@coren-pe.gov.br"></div>
       </fieldset>
     </form>
 
@@ -147,7 +149,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const cv = $('photo-canvas'), ctx = cv.getContext('2d'), S = cv.width;
   let photo = null;
 
-  // ---- Logo: converte coren_logo.png para base64 (evita taint no html2canvas) ----
+  // ---- Logo: converte coren_logo.png para base64 ----
   async function loadLogoAsDataURL() {
     try {
       const res = await fetch('coren_logo.png', { cache: 'no-store' });
@@ -183,12 +185,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     }
     ctx.restore();
   }
+  
   $('foto').addEventListener('change', e => {
+    $('foto').classList.remove('input-error'); // Remove erro ao enviar foto
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => { const im = new Image(); im.onload = () => { photo = im; drawPhoto(); }; im.src = ev.target.result; };
     reader.readAsDataURL(file);
   });
+  
   ['zoom', 'px', 'py'].forEach(id => $(id).addEventListener('input', drawPhoto));
 
   // ---- Textos ----
@@ -228,8 +233,13 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   $('telefone').addEventListener('input', e => { e.target.value = formatPhone(e.target.value); });
+  
+  // Remove classe de erro enquanto o usuário digita
   document.querySelectorAll('#form input[type=text], #form input[type=email], #form input[type=tel]')
-    .forEach(i => i.addEventListener('input', update));
+    .forEach(i => i.addEventListener('input', e => {
+      e.target.classList.remove('input-error');
+      update();
+    }));
 
   // ---- Exportação ----
   const OUT_W = 720, OUT_H = 230;
@@ -237,11 +247,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const SOFT_LIMIT = 62 * 1024;
 
   const toBlob = (c, q) => new Promise(res => {
-    try {
-      c.toBlob(res, 'image/jpeg', q);
-    } catch(e) {
-      res(null);
-    }
+    try { c.toBlob(res, 'image/jpeg', q); } catch(e) { res(null); }
   });
   
   const setStatus = (m, isError = false) => { 
@@ -326,33 +332,76 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     }
   }
 
-  $('btn-download').addEventListener('click', () => busy($('btn-download'), 'Gerando…', async () => {
-    const canvas = await renderSignature();
-    const blob = await compress(canvas);
-    
-    if (!blob) {
-      throw new Error('O navegador bloqueou a geração do ficheiro. Verifique se o logo "coren_logo.png" está no mesmo diretório.');
+  $('btn-download').addEventListener('click', () => {
+    // ---- Validação de Campos Obrigatórios ----
+    const mandatoryFields = [
+      { id: 'foto', label: 'Foto de perfil', isFile: true },
+      { id: 'nome', label: 'Nome' },
+      { id: 'cargo', label: 'Cargo ou função' },
+      { id: 'dept', label: 'Departamento' },
+      { id: 'registro', label: 'Matrícula' },
+      { id: 'email', label: 'E-mail' }
+    ];
+
+    let missing = [];
+
+    mandatoryFields.forEach(field => {
+      const el = $(field.id);
+      el.classList.remove('input-error'); // Limpa o erro anterior
+      
+      if (field.isFile) {
+        if (!photo) { // Se não houver foto carregada no canvas
+          missing.push(field.label);
+          el.classList.add('input-error');
+        }
+      } else {
+        if (!el.value.trim()) { // Se o campo de texto estiver vazio
+          missing.push(field.label);
+          el.classList.add('input-error');
+        }
+      }
+    });
+
+    if (missing.length > 0) {
+      setStatus('Preencha os campos obrigatórios em branco: ' + missing.join(', '), true);
+      return; // Interrompe a geração da imagem
     }
+    // ------------------------------------------
 
-    const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
+    busy($('btn-download'), 'Gerando…', async () => {
+      const canvas = await renderSignature();
+      const blob = await compress(canvas);
+      
+      if (!blob) {
+        throw new Error('O navegador bloqueou a geração do ficheiro. Verifique se o logo "coren_logo.png" está no mesmo diretório.');
+      }
 
-    if (blob.size > HARD_LIMIT) {
-      setStatus('Não foi possível comprimir abaixo de 64 KB (' + kb + ' KB). Tente uma foto mais simples.', true);
-      return;
-    }
+      const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
 
-    const a = document.createElement('a');
-    a.download = fileName();
-    a.href = URL.createObjectURL(blob);
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      if (blob.size > HARD_LIMIT) {
+        setStatus('Não foi possível comprimir abaixo de 64 KB (' + kb + ' KB). Tente uma foto mais simples.', true);
+        return;
+      }
 
-    const margem = ((HARD_LIMIT - blob.size) / 1024).toFixed(1).replace('.', ',');
-    setStatus('✔ Baixado: ' + a.download + ' — ' + kb + ' KB (margem de ' + margem + ' KB).');
-  }));
+      const a = document.createElement('a');
+      a.download = fileName();
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+
+      const margem = ((HARD_LIMIT - blob.size) / 1024).toFixed(1).replace('.', ',');
+      setStatus('✔ Baixado: ' + a.download + ' — ' + kb + ' KB (margem de ' + margem + ' KB).');
+    });
+  });
 
   $('btn-reset').addEventListener('click', () => {
-    $('form').reset(); photo = null; drawPhoto(); update(); setStatus('Campos limpos.');
+    $('form').reset(); 
+    photo = null; 
+    drawPhoto(); 
+    update(); 
+    setStatus('Campos limpos.');
+    // Limpa também as marcações de erro visual
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
   });
 
   // Inicialização
