@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Assinatura Coren-PE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        
+        /* Signature Canvas Styles */
+        .signature-box {
+            width: 700px;
+            height: 220px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+        .sig-bg-top {
+            position: absolute;
+            top: 10px; left: 0; right: 0;
+            height: 15px;
+            background: #888888;
+        }
+        .sig-bg-blue {
+            position: absolute;
+            top: -5px; left: 160px;
+            width: 120px; height: 30px;
+            background: #1e62a2;
+            transform: skew(-30deg);
+        }
+        .photo-circle {
+            position: absolute;
+            top: 25px; left: 20px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            border: 8px solid #1e62a2;
+            object-fit: cover;
+            z-index: 2;
+            background-color: #eee;
+        }
+        .logo {
+            position: absolute;
+            top: 40px; left: 220px;
+            height: 60px;
+        }
+        .dept {
+            position: absolute;
+            top: 110px; left: 220px;
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #000;
+            border-bottom: 2px solid #1e62a2;
+            padding-bottom: 5px;
+            width: 450px;
+            letter-spacing: 0.5px;
+        }
+        .contact-info {
+            position: absolute;
+            top: 135px; left: 220px;
+            font-size: 11px;
+            color: #333;
+            line-height: 1.4;
+        }
+        .bottom-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 25px;
+            background: #333333;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn {
+            background: #1e62a2; color: #fff; border: none; padding: 12px 20px;
+            cursor: pointer; font-size: 16px; margin-top: 20px; border-radius: 5px; font-weight: bold;
+        }
+        .btn:hover { background: #154a7d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Gerador de Assinatura - Coren-PE</h2>
+        <p>Preencha os dados abaixo. A imagem será atualizada ao lado e você poderá baixar sua assinatura padrão.</p>
+        <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 300px;">
+                <div class="form-group">
+                    <label>Foto de Perfil:</label>
+                    <input type="file" id="foto" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Nome (para exibição na base):</label>
+                    <input type="text" id="nome_base" value="Dr. Richardes Caúla" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>Nome Completo (Contato):</label>
+                    <input type="text" id="nome_contato" value="Richardes Caúla" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>Departamento:</label>
+                    <input type="text" id="dept" value="Assessoria de Planejamento e Qualidade" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>Telefone:</label>
+                    <input type="text" id="telefone" value="+55 (81) 99793-1310" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>E-mail:</label>
+                    <input type="email" id="email" value="richardes.caula@coren-pe.gov.br" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>Número Coren (ex: 311.000):</label>
+                    <input type="text" id="registro" value="311.000" oninput="updateSig()">
+                </div>
+                <div class="form-group">
+                    <label>Endereço:</label>
+                    <input type="text" id="endereco" value="Centro Empresarial Apolônio Sales, av. Conde da Boa Vista, N 800 - 9º andar" oninput="updateSig()">
+                </div>
+            </div>
+            
+            <div style="flex: 1.5; min-width: 400px;">
+                <h3>Pré-visualização:</h3>
+                <div class="signature-box" id="signature">
+                    <div class="sig-bg-top"></div>
+                    <div class="sig-bg-blue"></div>
+                    
+                    <!-- A logo fornecida (coren_logo.png) deve estar na mesma pasta -->
+                    <img src="coren_logo.png" class="logo" alt="Coren PE">
+                    
+                    <!-- Foto placeholder -->
+                    <img src="https://via.placeholder.com/150" id="sig-foto" class="photo-circle" alt="Sua Foto">
+                    
+                    <div class="dept" id="sig-dept">ASSESSORIA DE PLANEJAMENTO E QUALIDADE</div>
+                    <div class="contact-info">
+                        <strong>CONTATO</strong><br>
+                        <span id="sig-tel">+55 (81) 99793-1310</span><br>
+                        <span id="sig-email">richardes.caula@coren-pe.gov.br</span><br>
+                        <span id="sig-nome_contato">Richardes Caúla</span><br>
+                        <span id="sig-end">Centro Empresarial Apolônio Sales, av. Conde da Boa Vista, N 800 - 9º andar</span>
+                    </div>
+                    <div class="bottom-bar">
+                        <span id="sig-bottom-text">DR. RICHARDES CAÚLA - COREN-PE - 311.000</span>
+                    </div>
+                </div>
+                <button class="btn" onclick="downloadSig()">⬇ Baixar Assinatura em Imagem</button>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Certifique-se de que o arquivo <strong>coren_logo.png</strong> esteja na mesma pasta deste arquivo PHP.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateSig() {
+            const nomeBase = document.getElementById('nome_base').value;
+            const nomeContato = document.getElementById('nome_contato').value;
+            
+            document.getElementById('sig-dept').textContent = document.getElementById('dept').value;
+            document.getElementById('sig-tel').textContent = document.getElementById('telefone').value;
+            document.getElementById('sig-email').textContent = document.getElementById('email').value;
+            document.getElementById('sig-nome_contato').textContent = nomeContato;
+            document.getElementById('sig-end').textContent = document.getElementById('endereco').value;
+            
+            const registro = document.getElementById('registro').value;
+            document.getElementById('sig-bottom-text').textContent = `${nomeBase.toUpperCase()} - COREN-PE - ${registro}`;
+        }
+
+        // Script para carregar a foto do usuário para a bolinha
+        document.getElementById('foto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('sig-foto').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Transforma a Div em Canvas e baixa a imagem gerada
+        function downloadSig() {
+            const sig = document.getElementById('signature');
+            html2canvas(sig, {
+                scale: 2, // Maior qualidade (retina display)
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'assinatura_coren.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
