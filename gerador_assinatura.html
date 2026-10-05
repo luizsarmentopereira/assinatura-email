@@ -101,31 +101,31 @@
                 </div>
                 <div class="form-group">
                     <label>Nome (para exibição na base):</label>
-                    <input type="text" id="nome_base" value="Dr. Richardes Caúla" oninput="updateSig()">
+                    <input type="text" id="nome_base" placeholder="Ex: Dr. João Silva" oninput="updateSig()">
                 </div>
                 <div class="form-group">
                     <label>Nome Completo (Contato):</label>
-                    <input type="text" id="nome_contato" value="Richardes Caúla" oninput="updateSig()">
+                    <input type="text" id="nome_contato" placeholder="Ex: João da Silva" oninput="updateSig()">
                 </div>
                 <div class="form-group">
                     <label>Departamento:</label>
-                    <input type="text" id="dept" value="Assessoria de Planejamento e Qualidade" oninput="updateSig()">
+                    <input type="text" id="dept" placeholder="Ex: Setor de TI" oninput="updateSig()">
                 </div>
                 <div class="form-group">
                     <label>Telefone:</label>
-                    <input type="text" id="telefone" value="+55 (81) 99793-1310" oninput="updateSig()">
+                    <input type="text" id="telefone" placeholder="Ex: +55 (81) 90000-0000" oninput="updateSig()">
                 </div>
                 <div class="form-group">
                     <label>E-mail:</label>
-                    <input type="email" id="email" value="richardes.caula@coren-pe.gov.br" oninput="updateSig()">
+                    <input type="email" id="email" placeholder="Ex: colaborador@coren-pe.gov.br" oninput="updateSig()">
                 </div>
                 <div class="form-group">
-                    <label>Número Coren (ex: 311.000):</label>
-                    <input type="text" id="registro" value="311.000" oninput="updateSig()">
+                    <label>Número Coren (ex: 123.456):</label>
+                    <input type="text" id="registro" placeholder="Ex: 123.456" oninput="updateSig()">
                 </div>
                 <div class="form-group">
                     <label>Endereço:</label>
-                    <input type="text" id="endereco" value="Centro Empresarial Apolônio Sales, av. Conde da Boa Vista, N 800 - 9º andar" oninput="updateSig()">
+                    <input type="text" id="endereco" placeholder="Ex: Av. Conde da Boa Vista..." oninput="updateSig()">
                 </div>
             </div>
             
@@ -135,46 +135,44 @@
                     <div class="sig-bg-top"></div>
                     <div class="sig-bg-blue"></div>
                     
-                    <!-- A logo fornecida (coren_logo.png) deve estar na mesma pasta -->
+                    <!-- A logo fornecida deve estar na mesma pasta -->
                     <img src="coren_logo.png" class="logo" alt="Coren PE">
                     
                     <!-- Foto placeholder -->
-                    <img src="https://via.placeholder.com/150" id="sig-foto" class="photo-circle" alt="Sua Foto">
+                    <img src="https://via.placeholder.com/150" id="sig-foto" class="photo-circle" alt="Foto">
                     
-                    <div class="dept" id="sig-dept">ASSESSORIA DE PLANEJAMENTO E QUALIDADE</div>
+                    <div class="dept" id="sig-dept">NOME DO DEPARTAMENTO</div>
                     <div class="contact-info">
                         <strong>CONTATO</strong><br>
-                        <span id="sig-tel">+55 (81) 99793-1310</span><br>
-                        <span id="sig-email">richardes.caula@coren-pe.gov.br</span><br>
-                        <span id="sig-nome_contato">Richardes Caúla</span><br>
-                        <span id="sig-end">Centro Empresarial Apolônio Sales, av. Conde da Boa Vista, N 800 - 9º andar</span>
+                        <span id="sig-tel">+55 (81) 00000-0000</span><br>
+                        <span id="sig-email">email@coren-pe.gov.br</span><br>
+                        <span id="sig-nome_contato">Nome Completo</span><br>
+                        <span id="sig-end">Endereço da Instituição</span>
                     </div>
                     <div class="bottom-bar">
-                        <span id="sig-bottom-text">DR. RICHARDES CAÚLA - COREN-PE - 311.000</span>
+                        <span id="sig-bottom-text">TÍTULO E NOME - COREN-PE - REGISTRO</span>
                     </div>
                 </div>
                 <button class="btn" onclick="downloadSig()">⬇ Baixar Assinatura em Imagem</button>
-                <p style="font-size: 12px; color: #666; margin-top: 10px;">Certifique-se de que o arquivo <strong>coren_logo.png</strong> esteja na mesma pasta deste arquivo PHP.</p>
             </div>
         </div>
     </div>
 
     <script>
         function updateSig() {
-            const nomeBase = document.getElementById('nome_base').value;
-            const nomeContato = document.getElementById('nome_contato').value;
+            const nomeBase = document.getElementById('nome_base').value || 'TÍTULO E NOME';
+            const nomeContato = document.getElementById('nome_contato').value || 'Nome Completo';
+            const registro = document.getElementById('registro').value || 'REGISTRO';
             
-            document.getElementById('sig-dept').textContent = document.getElementById('dept').value;
-            document.getElementById('sig-tel').textContent = document.getElementById('telefone').value;
-            document.getElementById('sig-email').textContent = document.getElementById('email').value;
+            document.getElementById('sig-dept').textContent = document.getElementById('dept').value || 'NOME DO DEPARTAMENTO';
+            document.getElementById('sig-tel').textContent = document.getElementById('telefone').value || '+55 (81) 00000-0000';
+            document.getElementById('sig-email').textContent = document.getElementById('email').value || 'email@coren-pe.gov.br';
             document.getElementById('sig-nome_contato').textContent = nomeContato;
-            document.getElementById('sig-end').textContent = document.getElementById('endereco').value;
+            document.getElementById('sig-end').textContent = document.getElementById('endereco').value || 'Endereço da Instituição';
             
-            const registro = document.getElementById('registro').value;
             document.getElementById('sig-bottom-text').textContent = `${nomeBase.toUpperCase()} - COREN-PE - ${registro}`;
         }
 
-        // Script para carregar a foto do usuário para a bolinha
         document.getElementById('foto').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -186,11 +184,10 @@
             }
         });
 
-        // Transforma a Div em Canvas e baixa a imagem gerada
         function downloadSig() {
             const sig = document.getElementById('signature');
             html2canvas(sig, {
-                scale: 2, // Maior qualidade (retina display)
+                scale: 2, 
                 useCORS: true,
                 backgroundColor: "#ffffff"
             }).then(canvas => {
