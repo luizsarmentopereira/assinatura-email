@@ -11,9 +11,12 @@
 html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body { margin:0; padding:24px 16px; font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--text); }
 .container { max-width:1200px; margin:auto; }
-header { margin-bottom:20px; }
-header h1 { margin:0 0 4px; font-size:24px; color:var(--blue); }
-header p { margin:0; color:var(--muted); }
+
+/* ===== Cabeçalho Melhorado com Linha Divisória ===== */
+header { display:flex; align-items:center; margin-bottom:32px; }
+.header-logo { height:72px; flex:none; object-fit:contain; margin-right:28px; }
+header h1 { margin:0; font-size:32px; color:var(--blue-dark); font-weight:700; line-height: 1.2; padding-left:28px; border-left:2px solid var(--line); }
+
 .layout { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:24px; align-items:start; }
 .layout > * { min-width:0; }
 
@@ -24,11 +27,11 @@ header p { margin:0; color:var(--muted); }
 }
 @media (max-width:600px) {
   body { padding:14px 10px; }
-  header h1 { font-size:20px; }
-  header p { font-size:14px; }
+  header { flex-direction:column; text-align:center; gap:16px; margin-bottom:24px; }
+  .header-logo { height:64px; margin-right:0; }
+  header h1 { font-size:26px; padding-left:0; border-left:none; } /* Remove a linha no celular */
   .panel { padding:14px; }
   .preview-scroll { padding:8px !important; }
-  /* 16px evita o zoom automático do iOS ao focar nos campos */
   .field input[type=text], .field input[type=email], .field input[type=tel] { font-size:16px; padding:12px; }
   .field label { font-size:14px; }
   .field input[type=range] { height:32px; }
@@ -54,24 +57,23 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
 
-/* Wrapper da Pré-visualização com adaptação Mobile */
+/* Wrapper da Pré-visualização com rolagem Mobile */
 .preview-wrap { position:sticky; top:16px; }
 .preview-title { margin:0 0 10px; font-size:16px; }
 .preview-scroll { 
-  overflow: hidden; /* a assinatura é reduzida por escala, sem barra horizontal */
+  overflow-x: auto; 
   padding: 16px; 
   background: repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px; 
   border: 1px dashed var(--line); 
   border-radius: 6px; 
-  display: flex;
-  justify-content: center;
+  display: block;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: inset -15px 0 15px -15px rgba(0,0,0,0.1);
 }
 .hint { margin:10px 0 0; font-size:12.5px; color:var(--muted); text-align: center;}
 
 /* ===== Assinatura 720 × 230 px ===== */
-.sig-scaler { flex:none; width:720px; height:230px; position:relative; }
-.sig { transform-origin:top left; }
-.sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; }
+.sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; margin: 0 auto; }
 .sig-top { display:block; width:720px; height:8px; }
 .sig-main { display:flex; align-items:center; gap:22px; padding:14px 26px; height:154px; }
 .sig-photo { flex:none; width:116px; height:116px; border-radius:50%; border:5px solid #1e62a2; overflow:hidden; background:#fff; }
@@ -106,8 +108,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 <body>
 <div class="container">
   <header>
-    <h1>Gerador de assinatura de e-mail – Coren-PE</h1>
-    <p>Preencha os dados. A pré-visualização atualiza na hora e você baixa a imagem padronizada em 720 × 230 px.</p>
+    <img id="logo-header" src="coren_logo.png" alt="Coren-PE" class="header-logo">
+    <h1>Gerador de assinatura de e-mail</h1>
   </header>
 
   <div class="layout">
@@ -143,7 +145,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     <section class="panel preview-wrap">
       <h2 class="preview-title">Pré-visualização</h2>
       <div class="preview-scroll" id="preview-container">
-        <div class="sig-scaler" id="sig-scaler">
         <div class="sig" id="signature">
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
@@ -168,7 +169,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
             <div class="sig-addr"><b>Centro Empresarial Apolônio Sales</b><br>Av. Conde da Boa Vista, Nº 800 - 9º Andar</div>
           </div>
           <div class="sig-base"></div>
-        </div>
         </div>
       </div>
       <div class="actions">
@@ -200,26 +200,11 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
         fr.readAsDataURL(blob);
       });
       $('logo-coren').src = dataURL;
+      $('logo-header').src = dataURL;
     } catch (e) {
       console.warn('Não foi possível embutir o logo como base64 — usando caminho direto.', e);
     }
   }
-
-  // ---- Dimensionamento dinâmico (mobile): reduz a assinatura para caber na tela ----
-  const wrap = $('preview-container');
-  const sig = $('signature');
-  const scaler = $('sig-scaler');
-  function fitPreview() {
-    const cs = getComputedStyle(wrap);
-    const avail = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const scale = Math.min(1, avail / 720);
-    sig.style.transform = scale < 1 ? 'scale(' + scale + ')' : 'none';
-    scaler.style.width = (720 * scale) + 'px';
-    scaler.style.height = (230 * scale) + 'px';
-  }
-  new ResizeObserver(fitPreview).observe(wrap);
-  window.addEventListener('orientationchange', fitPreview);
-  fitPreview();
 
   // ---- Foto (recorte circular com zoom e deslocamento) ----
   function drawPhoto() {
@@ -240,7 +225,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     ctx.restore();
   }
   
-  $('foto').addEventListener('change', e => {$('foto').classList.remove('input-error'); 
+  $('foto').addEventListener('change', e => {
+    $('foto').classList.remove('input-error'); 
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => { const im = new Image(); im.onload = () => { photo = im; drawPhoto(); }; im.src = ev.target.result; };
@@ -271,7 +257,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       $(out).textContent =$(inp).value.trim() || fb;
     });
 
-    const reg = $('registro').value.trim();$('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
+    const reg = $('registro').value.trim();
+    $('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
 
     const tel = $('telefone').value.trim();
     const telRow = $('row-tel');
@@ -309,20 +296,10 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   };
 
   async function renderSignature() {
-    // Usar 'onclone' permite renderizar a assinatura com tamanho real de 720px no canvas
-    // independentemente do zoom aplicado dinamicamente no telemóvel para visualização.
     const src = await html2canvas($('signature'), { 
       scale: 2, 
       useCORS: true, 
-      backgroundColor: '#ffffff',
-      windowWidth: 1200,
-      onclone: (clonedDoc) => {
-        const clonedSig = clonedDoc.getElementById('signature');
-        const clonedScaler = clonedDoc.getElementById('sig-scaler');
-        clonedSig.style.transform = 'none';
-        clonedScaler.style.width = '720px';
-        clonedScaler.style.height = '230px';
-      }
+      backgroundColor: '#ffffff'
     });
     
     const out = document.createElement('canvas');
@@ -459,7 +436,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     });
   });
 
-  $('btn-reset').addEventListener('click', () => {$('form').reset(); 
+  $('btn-reset').addEventListener('click', () => {
+    $('form').reset(); 
     photo = null; 
     drawPhoto(); 
     update(); 
