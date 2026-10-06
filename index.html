@@ -29,7 +29,7 @@ header h1 { margin:0; font-size:32px; color:var(--blue-dark); font-weight:700; l
   body { padding:14px 10px; }
   header { flex-direction:column; text-align:center; gap:16px; margin-bottom:24px; }
   .header-logo { height:64px; margin-right:0; }
-  header h1 { font-size:26px; padding-left:0; border-left:none; } /* Remove a linha no celular */
+  header h1 { font-size:26px; padding-left:0; border-left:none; }
   .panel { padding:14px; }
   .preview-scroll { padding:8px !important; }
   .field input[type=text], .field input[type=email], .field input[type=tel] { font-size:16px; padding:12px; }
@@ -57,7 +57,13 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
 
-/* Wrapper da Pré-visualização com rolagem Mobile */
+/* Alternador de Modo (Pessoal/Setor) */
+.mode-toggle { display: flex; gap: 8px; margin-bottom: 20px; background: #e3e8ee; padding: 4px; border-radius: 6px; }
+.mode-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; border-radius: 4px; font-size:14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s; }
+.mode-btn.active { background: #fff; color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.mode-btn:hover:not(.active) { color: var(--text); }
+
+/* Wrapper da Pré-visualização */
 .preview-wrap { position:sticky; top:16px; }
 .preview-title { margin:0 0 10px; font-size:16px; }
 .preview-scroll { 
@@ -93,6 +99,12 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .sig-addr { font-size:11px; line-height:1.4; color:#444; text-align:right; }
 .sig-addr b { color:#12304d; }
 .sig-base { height:6px; background:#12304d; }
+
+/* Modificadores para Assinatura de Setor */
+.sig.sig-setor .sig-photo { display: none; }
+.sig.sig-setor .sig-info { border-left: none; padding-left: 0; }
+.sig.sig-setor .sig-name { font-size: 26px; color: var(--blue-dark); margin-bottom: 6px; }
+.sig.sig-setor .sig-role { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
 /* ===================== */
 
 .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
@@ -114,7 +126,14 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   <div class="layout">
     <form class="panel" id="form" onsubmit="return false" autocomplete="off">
-      <fieldset>
+      
+      <!-- Alternador de Modos -->
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" id="btn-pessoal">Pessoal</button>
+        <button type="button" class="mode-btn" id="btn-setor">Setor</button>
+      </div>
+
+      <fieldset id="fs-foto">
         <legend>Foto</legend>
         <div class="field">
           <label for="foto">Foto de perfil <span class="req">*</span></label>
@@ -129,16 +148,40 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
       <fieldset>
         <legend>Identificação</legend>
-        <div class="field"><label for="nome">Nome (com título, se houver) <span class="req">*</span></label><input type="text" id="nome" placeholder="Ex: João da Silva"></div>
-        <div class="field"><label for="cargo">Cargo ou função <span class="req">*</span></label><input type="text" id="cargo" placeholder="Ex: Analista de Tecnologia da Informação"></div>
-        <div class="field"><label for="dept">Departamento <span class="req">*</span></label><input type="text" id="dept" placeholder="Ex: Setor de TI"></div>
-        <div class="field"><label for="registro">Matrícula (como no crachá) <span class="req">*</span></label><input type="text" id="registro" placeholder="Ex: 123.456" inputmode="numeric"></div>
+        <div class="field">
+          <label for="nome" id="label-nome">Nome (com título, se houver) <span class="req">*</span></label>
+          <input type="text" id="nome" placeholder="Ex: João da Silva">
+        </div>
+        <div class="field" id="f-cargo">
+          <label for="cargo" id="label-cargo">Cargo ou função <span class="req">*</span></label>
+          <input type="text" id="cargo" placeholder="Ex: Analista de Tecnologia da Informação">
+        </div>
+        <div class="field" id="f-dept">
+          <label for="dept">Departamento <span class="req">*</span></label>
+          <input type="text" id="dept" placeholder="Ex: Setor de TI">
+        </div>
+        <div class="field" id="f-registro">
+          <label for="registro">Matrícula (como no crachá) <span class="req">*</span></label>
+          <input type="text" id="registro" placeholder="Ex: 123.456" inputmode="numeric">
+        </div>
       </fieldset>
 
       <fieldset>
         <legend>Contato</legend>
-        <div class="field"><label for="telefone">Telefone <small style="color:var(--muted);font-weight:400">(opcional)</small></label><input type="tel" id="telefone" placeholder="(81) 90000-0000" inputmode="tel"></div>
-        <div class="field"><label for="email">E-mail <span class="req">*</span></label><input type="email" id="email" placeholder="nome@coren-pe.gov.br"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="field">
+            <label for="telefone">Telefone <small style="color:var(--muted);font-weight:400">(opc.)</small></label>
+            <input type="tel" id="telefone" placeholder="(81) 90000-0000" inputmode="tel">
+          </div>
+          <div class="field">
+            <label for="ramal">Ramal <small style="color:var(--muted);font-weight:400">(opc.)</small></label>
+            <input type="text" id="ramal" placeholder="Ex: 215">
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">E-mail <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="nome@coren-pe.gov.br">
+        </div>
       </fieldset>
     </form>
 
@@ -186,6 +229,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const $ = id => document.getElementById(id);
   const cv = $('photo-canvas'), ctx = cv.getContext('2d'), S = cv.width;
   let photo = null;
+  let currentMode = 'pessoal'; // 'pessoal' ou 'setor'
 
   // ---- Logo: converte coren_logo.png para base64 ----
   async function loadLogoAsDataURL() {
@@ -204,6 +248,48 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     } catch (e) {
       console.warn('Não foi possível embutir o logo como base64 — usando caminho direto.', e);
     }
+  }
+
+  // ---- Alternância de Modo ----
+  $('btn-pessoal').addEventListener('click', () => setMode('pessoal'));
+  $('btn-setor').addEventListener('click', () => setMode('setor'));
+
+  function setMode(mode) {
+    currentMode = mode;
+    $('btn-pessoal').classList.toggle('active', mode === 'pessoal');
+    $('btn-setor').classList.toggle('active', mode === 'setor');
+
+    const isSetor = mode === 'setor';
+    
+    // Mostra/Oculta campos do formulário
+    $('fs-foto').style.display = isSetor ? 'none' : 'block';
+    $('f-dept').style.display = isSetor ? 'none' : 'block';
+    $('f-registro').style.display = isSetor ? 'none' : 'block';
+
+    if (isSetor) {
+      // Ajusta o Nome
+      $('label-nome').innerHTML = 'Nome do Setor <span class="req">*</span>';
+      $('nome').placeholder = 'Ex: Departamento de Fiscalização';
+      
+      // Reaproveita o campo "Cargo" para Informações Extras
+      $('label-cargo').innerHTML = 'Informação extra (ex: Horário, Sala) <small style="color:var(--muted);font-weight:400">(opcional)</small>';
+      $('cargo').placeholder = 'Ex: Seg a Sex, das 08h às 16h';
+      
+      $('signature').classList.add('sig-setor');
+    } else {
+      $('label-nome').innerHTML = 'Nome (com título, se houver) <span class="req">*</span>';
+      $('nome').placeholder = 'Ex: João da Silva';
+      
+      $('label-cargo').innerHTML = 'Cargo ou função <span class="req">*</span>';
+      $('cargo').placeholder = 'Ex: Analista de Tecnologia da Informação';
+      
+      $('signature').classList.remove('sig-setor');
+    }
+
+    // Limpa erros residuais e atualiza a tela
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+    setStatus('');
+    update();
   }
 
   // ---- Foto (recorte circular com zoom e deslocamento) ----
@@ -245,26 +331,52 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     return '(' + d.slice(0, 2) + ') ' + rest.slice(0, cut) + (rest.length > cut ? '-' + rest.slice(cut) : '');
   }
 
-  const defaults = [
-    ['nome', 's-nome', 'Nome Completo'],
-    ['cargo', 's-cargo', 'Cargo ou função'],
-    ['dept', 's-dept', 'Departamento'],
-    ['email', 's-email', 'nome@coren-pe.gov.br']
-  ];
-
   function update() {
-    defaults.forEach(([inp, out, fb]) => {
-      $(out).textContent =$(inp).value.trim() || fb;
-    });
+    if (currentMode === 'pessoal') {
+      $('s-nome').textContent = $('nome').value.trim() || 'Nome Completo';
+      $('s-cargo').textContent = $('cargo').value.trim() || 'Cargo ou função';
+      $('s-dept').textContent = $('dept').value.trim() || 'Departamento';
+      const reg = $('registro').value.trim();
+      $('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
+      
+      $('s-cargo').style.display = 'block';
+      $('s-dept').style.display = 'block';
+      $('s-mat').style.display = 'block';
+    } else {
+      $('s-nome').textContent = $('nome').value.trim() || 'Nome do Setor';
+      
+      const extraInfo = $('cargo').value.trim();
+      if (extraInfo) {
+        $('s-cargo').textContent = extraInfo;
+        $('s-cargo').style.display = 'block';
+      } else {
+        $('s-cargo').style.display = 'none';
+      }
+      
+      $('s-dept').style.display = 'none';
+      $('s-mat').style.display = 'none';
+    }
 
-    const reg = $('registro').value.trim();
-    $('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
+    $('s-email').textContent = $('email').value.trim() || 'nome@coren-pe.gov.br';
 
     const tel = $('telefone').value.trim();
+    const ramal = $('ramal').value.trim();
     const telRow = $('row-tel');
+    
+    let phoneText = '';
+    
     if (tel) {
+      phoneText = '+55 ' + tel;
+    }
+    
+    if (ramal) {
+      if (phoneText) phoneText += '  |  ';
+      phoneText += 'Ramal: ' + ramal;
+    }
+
+    if (phoneText) {
       telRow.style.display = 'flex';
-      $('s-tel').textContent = '+55 ' + tel;
+      $('s-tel').textContent = phoneText;
     } else {
       telRow.style.display = 'none';
       $('s-tel').textContent = '';
@@ -273,6 +385,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   $('telefone').addEventListener('input', e => { e.target.value = formatPhone(e.target.value); });
   
+  // Atualiza também se digitar no campo do ramal
   document.querySelectorAll('#form input[type=text], #form input[type=email], #form input[type=tel]')
     .forEach(i => i.addEventListener('input', e => {
       e.target.classList.remove('input-error');
@@ -360,7 +473,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   function fileName() {
     const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    return 'assinatura_coren' + (slug ? '_' + slug : '') + '.jpg';
+    const prefix = currentMode === 'setor' ? 'assinatura_setor_' : 'assinatura_coren_';
+    return prefix + (slug ? slug : 'nova') + '.jpg';
   }
 
   async function busy(btn, label, job) {
@@ -376,15 +490,24 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   $('btn-download').addEventListener('click', () => {
-    // Validação de Campos
-    const mandatoryFields = [
-      { id: 'foto', label: 'Foto de perfil', isFile: true },
-      { id: 'nome', label: 'Nome' },
-      { id: 'cargo', label: 'Cargo ou função' },
-      { id: 'dept', label: 'Departamento' },
-      { id: 'registro', label: 'Matrícula' },
-      { id: 'email', label: 'E-mail' }
-    ];
+    // Validação Dinâmica
+    let mandatoryFields = [];
+    
+    if (currentMode === 'pessoal') {
+      mandatoryFields = [
+        { id: 'foto', label: 'Foto de perfil', isFile: true },
+        { id: 'nome', label: 'Nome' },
+        { id: 'cargo', label: 'Cargo ou função' },
+        { id: 'dept', label: 'Departamento' },
+        { id: 'registro', label: 'Matrícula' },
+        { id: 'email', label: 'E-mail' }
+      ];
+    } else {
+      mandatoryFields = [
+        { id: 'nome', label: 'Nome do Setor' },
+        { id: 'email', label: 'E-mail' }
+      ];
+    }
 
     let missing = [];
 
@@ -421,7 +544,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
 
       if (blob.size > HARD_LIMIT) {
-        setStatus('Não foi possível comprimir abaixo de 64 KB (' + kb + ' KB). Tente uma foto mais simples.', true);
+        setStatus('Não foi possível comprimir abaixo de 64 KB (' + kb + ' KB). Tente uma imagem mais simples.', true);
         return;
       }
 
