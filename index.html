@@ -14,28 +14,49 @@ header { margin-bottom:20px; }
 header h1 { margin:0 0 4px; font-size:24px; color:var(--blue); }
 header p { margin:0; color:var(--muted); }
 .layout { display:grid; grid-template-columns:minmax(300px,380px) 1fr; gap:24px; align-items:start; }
-@media (max-width:960px) { .layout { grid-template-columns:1fr; } }
+
+/* Responsividade do Formulário e Layout */
+@media (max-width:960px) { 
+  .layout { grid-template-columns:1fr; } 
+}
+@media (max-width:480px) {
+  body { padding: 16px 10px; }
+  .sliders { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .actions { flex-direction: column; }
+  .btn { width: 100%; text-align: center; justify-content: center; }
+}
+
 .panel { background:#fff; border:1px solid var(--line); border-radius:8px; padding:18px 20px; }
 fieldset { border:0; padding:0; margin:0 0 18px; }
 fieldset:last-of-type { margin-bottom:0; }
 legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; width:100%; border-bottom:2px solid var(--blue); }
 .field { margin-bottom:12px; }
 .field label { display:block; margin-bottom:4px; font-size:13px; font-weight:600; }
-.req { color: #d32f2f; font-weight: bold; } /* Asterisco vermelho */
-.input-error { border: 1px solid #d32f2f !important; background-color: #fff5f5 !important; } /* Destaca o campo com erro */
+.req { color: #d32f2f; font-weight: bold; }
+.input-error { border: 1px solid #d32f2f !important; background-color: #fff5f5 !important; } 
 .field input[type=text], .field input[type=email], .field input[type=tel] { width:100%; padding:9px 10px; border:1px solid #bcc7d3; border-radius:4px; font-size:14px; font-family:inherit; transition: 0.2s; }
 .field input[type=file] { width:100%; font-size:13px; padding: 4px; border: 1px solid transparent; border-radius: 4px; }
 .field input[type=range] { width:100%; accent-color:var(--blue); }
 .sliders { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
+
+/* Wrapper da Pré-visualização com adaptação Mobile */
 .preview-wrap { position:sticky; top:16px; }
 .preview-title { margin:0 0 10px; font-size:16px; }
-.preview-scroll { overflow-x:auto; padding:4px; background:repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px; border:1px dashed var(--line); border-radius:6px; }
-.hint { margin:10px 0 0; font-size:12.5px; color:var(--muted); }
+.preview-scroll { 
+  overflow: hidden; /* Oculta a barra de deslocamento horizontal porque agora usamos escala dinâmica */
+  padding: 16px; 
+  background: repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px; 
+  border: 1px dashed var(--line); 
+  border-radius: 6px; 
+  display: flex;
+  justify-content: center;
+}
+.hint { margin:10px 0 0; font-size:12.5px; color:var(--muted); text-align: center;}
 
 /* ===== Assinatura 720 × 230 px ===== */
-.sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; }
+.sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; }
 .sig-top { display:block; width:720px; height:8px; }
 .sig-main { display:flex; align-items:center; gap:22px; padding:14px 26px; height:154px; }
 .sig-photo { flex:none; width:116px; height:116px; border-radius:50%; border:5px solid #1e62a2; overflow:hidden; background:#fff; }
@@ -58,7 +79,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 /* ===================== */
 
 .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-.btn { background:var(--blue); color:#fff; border:0; padding:11px 18px; cursor:pointer; font-size:15px; border-radius:5px; font-weight:600; }
+.btn { background:var(--blue); color:#fff; border:0; padding:11px 18px; cursor:pointer; font-size:15px; border-radius:5px; font-weight:600; transition: background 0.2s; }
 .btn:hover { background:var(--blue-dark); }
 .btn.secondary { background:#fff; color:var(--blue); border:1px solid var(--blue); }
 .btn.secondary:hover { background:#eaf2fa; }
@@ -71,7 +92,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 <div class="container">
   <header>
     <h1>Gerador de assinatura de e-mail – Coren-PE</h1>
-    <p>Preencha os dados. A pré-visualização atualiza na hora e você baixa a imagem padronizada em 720 × 230 px (até 64 KB).</p>
+    <p>Preencha os dados. A pré-visualização atualiza na hora e você baixa a imagem padronizada em 720 × 230 px.</p>
   </header>
 
   <div class="layout">
@@ -106,7 +127,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
     <section class="panel preview-wrap">
       <h2 class="preview-title">Pré-visualização</h2>
-      <div class="preview-scroll">
+      <div class="preview-scroll" id="preview-container">
         <div class="sig" id="signature">
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
@@ -167,6 +188,28 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     }
   }
 
+  // ---- Dimensionamento Dinâmico para Ecrãs Pequenos (Mobile) ----
+  const wrap = $('preview-container');
+  const sig = $('signature');
+  const ro = new ResizeObserver(() => {
+    const padding = 32; // 16px esquerda + 16px direita da div preview-scroll
+    const availableW = wrap.clientWidth - padding;
+    
+    if (availableW < 720) {
+      const scale = availableW / 720;
+      sig.style.transform = `scale(${scale})`;
+      sig.style.transformOrigin = 'top left';
+      // Compensa a altura e a largura física que a assinatura continua a ocupar no ecrã
+      sig.style.marginBottom = `${230 * scale - 230}px`;
+      sig.style.marginRight = `${720 * scale - 720}px`;
+    } else {
+      sig.style.transform = 'none';
+      sig.style.marginBottom = '0';
+      sig.style.marginRight = '0';
+    }
+  });
+  ro.observe(wrap);
+
   // ---- Foto (recorte circular com zoom e deslocamento) ----
   function drawPhoto() {
     ctx.clearRect(0, 0, S, S);
@@ -186,8 +229,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     ctx.restore();
   }
   
-  $('foto').addEventListener('change', e => {
-    $('foto').classList.remove('input-error'); // Remove erro ao enviar foto
+  $('foto').addEventListener('change', e => {$('foto').classList.remove('input-error'); 
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => { const im = new Image(); im.onload = () => { photo = im; drawPhoto(); }; im.src = ev.target.result; };
@@ -215,11 +257,10 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   function update() {
     defaults.forEach(([inp, out, fb]) => {
-      $(out).textContent = $(inp).value.trim() || fb;
+      $(out).textContent =$(inp).value.trim() || fb;
     });
 
-    const reg = $('registro').value.trim();
-    $('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
+    const reg = $('registro').value.trim();$('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
 
     const tel = $('telefone').value.trim();
     const telRow = $('row-tel');
@@ -234,7 +275,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   $('telefone').addEventListener('input', e => { e.target.value = formatPhone(e.target.value); });
   
-  // Remove classe de erro enquanto o usuário digita
   document.querySelectorAll('#form input[type=text], #form input[type=email], #form input[type=tel]')
     .forEach(i => i.addEventListener('input', e => {
       e.target.classList.remove('input-error');
@@ -258,7 +298,19 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   };
 
   async function renderSignature() {
-    const src = await html2canvas($('signature'), { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    // Usar 'onclone' permite renderizar a assinatura com tamanho real de 720px no canvas
+    // independentemente do zoom aplicado dinamicamente no telemóvel para visualização.
+    const src = await html2canvas($('signature'), { 
+      scale: 2, 
+      useCORS: true, 
+      backgroundColor: '#ffffff',
+      onclone: (clonedDoc) => {
+        const clonedSig = clonedDoc.getElementById('signature');
+        clonedSig.style.transform = 'none';
+        clonedSig.style.margin = '0';
+      }
+    });
+    
     const out = document.createElement('canvas');
     out.width = OUT_W; out.height = OUT_H;
     const x = out.getContext('2d');
@@ -316,7 +368,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   function fileName() {
-    const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_\vert{}_$/g, '');
     return 'assinatura_coren' + (slug ? '_' + slug : '') + '.jpg';
   }
 
@@ -333,7 +385,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   $('btn-download').addEventListener('click', () => {
-    // ---- Validação de Campos Obrigatórios ----
+    // Validação de Campos
     const mandatoryFields = [
       { id: 'foto', label: 'Foto de perfil', isFile: true },
       { id: 'nome', label: 'Nome' },
@@ -347,15 +399,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
     mandatoryFields.forEach(field => {
       const el = $(field.id);
-      el.classList.remove('input-error'); // Limpa o erro anterior
+      el.classList.remove('input-error');
       
       if (field.isFile) {
-        if (!photo) { // Se não houver foto carregada no canvas
+        if (!photo) {
           missing.push(field.label);
           el.classList.add('input-error');
         }
       } else {
-        if (!el.value.trim()) { // Se o campo de texto estiver vazio
+        if (!el.value.trim()) {
           missing.push(field.label);
           el.classList.add('input-error');
         }
@@ -364,9 +416,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
     if (missing.length > 0) {
       setStatus('Preencha os campos obrigatórios em branco: ' + missing.join(', '), true);
-      return; // Interrompe a geração da imagem
+      return; 
     }
-    // ------------------------------------------
 
     busy($('btn-download'), 'Gerando…', async () => {
       const canvas = await renderSignature();
@@ -394,13 +445,11 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     });
   });
 
-  $('btn-reset').addEventListener('click', () => {
-    $('form').reset(); 
+  $('btn-reset').addEventListener('click', () => {$('form').reset(); 
     photo = null; 
     drawPhoto(); 
     update(); 
     setStatus('Campos limpos.');
-    // Limpa também as marcações de erro visual
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
   });
 
