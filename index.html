@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gerador de Assinatura de E-mail – Coren-PE</title>
+<link rel="icon" type="image/png" href="coren_escudo.png">
+<link rel="apple-touch-icon" href="coren_escudo.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root { --blue:#1e62a2; --blue-dark:#154a7d; --gray:#888b8d; --bg:#f1f4f8; --line:#d9e0e8; --text:#1c2733; --muted:#5d6b7a; }
@@ -12,7 +14,7 @@ html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body { margin:0; padding:24px 16px; font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--text); }
 .container { max-width:1200px; margin:auto; }
 
-/* ===== Cabeçalho Melhorado com Linha Divisória ===== */
+/* ===== Cabeçalho ===== */
 header { display:flex; align-items:center; margin-bottom:32px; }
 .header-logo { height:72px; flex:none; object-fit:contain; margin-right:28px; }
 header h1 { margin:0; font-size:32px; color:var(--blue-dark); font-weight:700; line-height: 1.2; padding-left:28px; border-left:2px solid var(--line); }
@@ -20,7 +22,6 @@ header h1 { margin:0; font-size:32px; color:var(--blue-dark); font-weight:700; l
 .layout { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:24px; align-items:start; }
 .layout > * { min-width:0; }
 
-/* ===== Responsividade ===== */
 @media (max-width:960px) {
   .layout { grid-template-columns:minmax(0,1fr); }
   .preview-wrap { position:static !important; }
@@ -40,7 +41,6 @@ header h1 { margin:0; font-size:32px; color:var(--blue-dark); font-weight:700; l
   .actions { flex-direction:column; }
   .btn { width:100%; min-height:48px; text-align:center; justify-content:center; }
 }
-/* ========================= */
 
 .panel { background:#fff; border:1px solid var(--line); border-radius:8px; padding:18px 20px; }
 fieldset { border:0; padding:0; margin:0 0 18px; }
@@ -49,7 +49,7 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .field { margin-bottom:12px; }
 .field label { display:block; margin-bottom:4px; font-size:13px; font-weight:600; }
 .req { color: #d32f2f; font-weight: bold; }
-.input-error { border: 1px solid #d32f2f !important; background-color: #fff5f5 !important; } 
+.input-error { border: 1px solid #d32f2f !important; background-color: #fff5f5 !important; }
 .field input[type=text], .field input[type=email], .field input[type=tel] { width:100%; padding:9px 10px; border:1px solid #bcc7d3; border-radius:4px; font-size:14px; font-family:inherit; transition: 0.2s; }
 .field input[type=file] { width:100%; font-size:13px; padding: 4px; border: 1px solid transparent; border-radius: 4px; }
 .field input[type=range] { width:100%; accent-color:var(--blue); }
@@ -57,21 +57,19 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
 
-/* Alternador de Modo (Pessoal/Setor) */
 .mode-toggle { display: flex; gap: 8px; margin-bottom: 20px; background: #e3e8ee; padding: 4px; border-radius: 6px; }
 .mode-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; border-radius: 4px; font-size:14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s; }
 .mode-btn.active { background: #fff; color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .mode-btn:hover:not(.active) { color: var(--text); }
 
-/* Wrapper da Pré-visualização */
 .preview-wrap { position:sticky; top:16px; }
 .preview-title { margin:0 0 10px; font-size:16px; }
-.preview-scroll { 
-  overflow-x: auto; 
-  padding: 16px; 
-  background: repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px; 
-  border: 1px dashed var(--line); 
-  border-radius: 6px; 
+.preview-scroll {
+  overflow-x: auto;
+  padding: 16px;
+  background: repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
   display: block;
   -webkit-overflow-scrolling: touch;
   box-shadow: inset -15px 0 15px -15px rgba(0,0,0,0.1);
@@ -79,10 +77,38 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .hint { margin:10px 0 0; font-size:12.5px; color:var(--muted); text-align: center;}
 
 /* ===== Assinatura 720 × 230 px ===== */
-.sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; margin: 0 auto; }
+.sig {
+  width:720px; height:230px; overflow:hidden; background:#fff;
+  font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; margin: 0 auto;
+  position: relative; /* <- necessário para ancorar a marca d'água */
+}
+
+/* Marca d'água: escudo do Coren-PE ao fundo da ASSINATURA */
+.sig-watermark {
+  position: absolute;
+  top: 85px;
+  right: 70px;
+  transform: translateY(-50%);
+  width: 120px;
+  height: auto;
+  opacity: 0.09;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* No modo Setor, o escudo vai mais para o centro */
+.sig.sig-setor .sig-watermark {
+  right: auto;
+  left: 65%;
+  transform: translate(-50%, -50%);
+}
+
+/* Todo o conteúdo da assinatura fica acima da marca d'água */
+.sig > *:not(.sig-watermark) { position: relative; z-index: 1; }
+
 .sig-top { display:block; width:720px; height:8px; }
 .sig-main { display:flex; align-items:center; gap:22px; padding:14px 26px; height:154px; }
-/* A responsabilidade do círculo e da borda agora é 100% do Canvas */
 .sig-photo { flex:none; width:116px; height:116px; }
 .sig-photo canvas { width:100%; height:100%; display:block; }
 .sig-info { flex:1; min-width:0; border-left:2px solid #d9e0e8; padding-left:22px; }
@@ -101,7 +127,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .sig-addr b { color:#12304d; }
 .sig-base { height:6px; background:#12304d; }
 
-/* Modificadores para Assinatura de Setor */
 .sig.sig-setor .sig-photo { display: none; }
 .sig.sig-setor .sig-info { border-left: none; padding-left: 0; }
 .sig.sig-setor .sig-name { font-size: 26px; color: var(--blue-dark); margin-bottom: 6px; }
@@ -127,8 +152,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   <div class="layout">
     <form class="panel" id="form" onsubmit="return false" autocomplete="off">
-      
-      <!-- Alternador de Modos -->
+
       <div class="mode-toggle">
         <button type="button" class="mode-btn active" id="btn-pessoal">Pessoal</button>
         <button type="button" class="mode-btn" id="btn-setor">Setor</button>
@@ -190,6 +214,9 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       <h2 class="preview-title">Pré-visualização</h2>
       <div class="preview-scroll" id="preview-container">
         <div class="sig" id="signature">
+          <!-- Marca d'água: escudo do Coren-PE ao fundo da assinatura -->
+          <img id="watermark-escudo" class="sig-watermark" src="coren_escudo.png" alt="" aria-hidden="true">
+
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
             <polygon points="0,0 230,0 216,8 0,8" fill="#1e62a2"/>
@@ -230,24 +257,35 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const $ = id => document.getElementById(id);
   const cv = $('photo-canvas'), ctx = cv.getContext('2d'), S = cv.width;
   let photo = null;
-  let currentMode = 'pessoal'; // 'pessoal' ou 'setor'
+  let currentMode = 'pessoal';
 
-  // ---- Logo: converte coren_logo.png para base64 ----
-  async function loadLogoAsDataURL() {
+  // ---- Converte uma URL em dataURL (para evitar canvas tainting) ----
+  async function fetchAsDataURL(url) {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' em ' + url);
+    const blob = await res.blob();
+    return new Promise((ok, no) => {
+      const fr = new FileReader();
+      fr.onload = () => ok(fr.result);
+      fr.onerror = no;
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  // ---- Carrega logo (topo + rodapé) e escudo (marca d'água) como base64 ----
+  async function loadImagesAsDataURL() {
     try {
-      const res = await fetch('coren_logo.png', { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const blob = await res.blob();
-      const dataURL = await new Promise((ok, no) => {
-        const fr = new FileReader();
-        fr.onload = () => ok(fr.result);
-        fr.onerror = no;
-        fr.readAsDataURL(blob);
-      });
-      $('logo-coren').src = dataURL;
-      $('logo-header').src = dataURL;
+      const logoURL = await fetchAsDataURL('coren_logo.png');
+      $('logo-coren').src = logoURL;
+      $('logo-header').src = logoURL;
     } catch (e) {
-      console.warn('Não foi possível embutir o logo como base64 — usando caminho direto.', e);
+      console.warn('Não foi possível embutir coren_logo.png como base64.', e);
+    }
+    try {
+      const escudoURL = await fetchAsDataURL('coren_escudo.png');
+      $('watermark-escudo').src = escudoURL;
+    } catch (e) {
+      console.warn('Não foi possível embutir coren_escudo.png como base64. A marca d\'água pode ficar ausente.', e);
     }
   }
 
@@ -261,53 +299,41 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     $('btn-setor').classList.toggle('active', mode === 'setor');
 
     const isSetor = mode === 'setor';
-    
-    // Mostra/Oculta campos do formulário
+
     $('fs-foto').style.display = isSetor ? 'none' : 'block';
     $('f-dept').style.display = isSetor ? 'none' : 'block';
     $('f-registro').style.display = isSetor ? 'none' : 'block';
 
     if (isSetor) {
-      // Ajusta o Nome
       $('label-nome').innerHTML = 'Nome do Setor <span class="req">*</span>';
       $('nome').placeholder = 'Ex: Departamento de Fiscalização';
-      
-      // Reaproveita o campo "Cargo" para Informações Extras
       $('label-cargo').innerHTML = 'Informação extra (ex: Horário, Sala) <small style="color:var(--muted);font-weight:400">(opcional)</small>';
       $('cargo').placeholder = 'Ex: Seg a Sex, das 08h às 16h';
-      
       $('signature').classList.add('sig-setor');
     } else {
       $('label-nome').innerHTML = 'Nome (com título, se houver) <span class="req">*</span>';
       $('nome').placeholder = 'Ex: João da Silva';
-      
       $('label-cargo').innerHTML = 'Cargo ou função <span class="req">*</span>';
       $('cargo').placeholder = 'Ex: Analista de Tecnologia da Informação';
-      
       $('signature').classList.remove('sig-setor');
     }
 
-    // Limpa erros residuais e atualiza a tela
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
     setStatus('');
     update();
   }
 
-  // ---- Foto com Anti-Aliasing (Suavização Nativa do Canvas) ----
+  // ---- Foto ----
   function drawPhoto() {
     ctx.clearRect(0, 0, S, S);
-    
-    // Preenche o fundo de branco puro para evitar transparência que gera artefatos
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); ctx.fill();
 
     ctx.save();
-    // Recorte interno um pouco menor para a borda cobrir as imperfeições e garantir borda 100% lisa
     ctx.beginPath(); ctx.arc(S / 2, S / 2, (S / 2) - 9, 0, Math.PI * 2); ctx.clip();
-    
-    ctx.fillStyle = '#e6ebf1'; 
+    ctx.fillStyle = '#e6ebf1';
     ctx.fillRect(0, 0, S, S);
-    
+
     if (photo) {
       const z = +$('zoom').value, ox = +$('px').value, oy = +$('py').value;
       const k = Math.max(S / photo.width, S / photo.height) * z;
@@ -320,23 +346,21 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     }
     ctx.restore();
 
-    // Desenha a borda azul DIRETAMENTE NO CANVAS (elimina o serrilhado do border-radius CSS)
-    // 18px aqui equivalem exatamente aos 5px na escala da pré-visualização final
     ctx.lineWidth = 18;
     ctx.strokeStyle = '#1e62a2';
-    ctx.beginPath(); 
-    ctx.arc(S / 2, S / 2, (S / 2) - 9, 0, Math.PI * 2); 
+    ctx.beginPath();
+    ctx.arc(S / 2, S / 2, (S / 2) - 9, 0, Math.PI * 2);
     ctx.stroke();
   }
-  
+
   $('foto').addEventListener('change', e => {
-    $('foto').classList.remove('input-error'); 
+    $('foto').classList.remove('input-error');
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => { const im = new Image(); im.onload = () => { photo = im; drawPhoto(); }; im.src = ev.target.result; };
     reader.readAsDataURL(file);
   });
-  
+
   ['zoom', 'px', 'py'].forEach(id => $(id).addEventListener('input', drawPhoto));
 
   // ---- Textos ----
@@ -356,13 +380,13 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       $('s-dept').textContent = $('dept').value.trim() || 'Departamento';
       const reg = $('registro').value.trim();
       $('s-mat').textContent = 'Matrícula ' + (reg || '000.000');
-      
+
       $('s-cargo').style.display = 'block';
       $('s-dept').style.display = 'block';
       $('s-mat').style.display = 'block';
     } else {
       $('s-nome').textContent = $('nome').value.trim() || 'Nome do Setor';
-      
+
       const extraInfo = $('cargo').value.trim();
       if (extraInfo) {
         $('s-cargo').textContent = extraInfo;
@@ -370,7 +394,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       } else {
         $('s-cargo').style.display = 'none';
       }
-      
+
       $('s-dept').style.display = 'none';
       $('s-mat').style.display = 'none';
     }
@@ -380,13 +404,9 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     const tel = $('telefone').value.trim();
     const ramal = $('ramal').value.trim();
     const telRow = $('row-tel');
-    
+
     let phoneText = '';
-    
-    if (tel) {
-      phoneText = '+55 ' + tel;
-    }
-    
+    if (tel) phoneText = '+55 ' + tel;
     if (ramal) {
       if (phoneText) phoneText += '  |  ';
       phoneText += 'Ramal: ' + ramal;
@@ -402,8 +422,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   $('telefone').addEventListener('input', e => { e.target.value = formatPhone(e.target.value); });
-  
-  // Atualiza também se digitar no campo do ramal
+
   document.querySelectorAll('#form input[type=text], #form input[type=email], #form input[type=tel]')
     .forEach(i => i.addEventListener('input', e => {
       e.target.classList.remove('input-error');
@@ -418,21 +437,21 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const toBlob = (c, q) => new Promise(res => {
     try { c.toBlob(res, 'image/jpeg', q); } catch(e) { res(null); }
   });
-  
-  const setStatus = (m, isError = false) => { 
+
+  const setStatus = (m, isError = false) => {
     const el = $('status');
-    el.textContent = m; 
+    el.textContent = m;
     if (isError) el.classList.add('status-error');
     else el.classList.remove('status-error');
   };
 
   async function renderSignature() {
-    const src = await html2canvas($('signature'), { 
-      scale: 2, 
-      useCORS: true, 
+    const src = await html2canvas($('signature'), {
+      scale: 2,
+      useCORS: true,
       backgroundColor: '#ffffff'
     });
-    
+
     const out = document.createElement('canvas');
     out.width = OUT_W; out.height = OUT_H;
     const x = out.getContext('2d');
@@ -455,10 +474,10 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   async function compress(canvas) {
     let smallest = null;
-    const keep = b => { 
-      if (!b) return null; 
-      if (!smallest || b.size < smallest.size) smallest = b; 
-      return b; 
+    const keep = b => {
+      if (!b) return null;
+      if (!smallest || b.size < smallest.size) smallest = b;
+      return b;
     };
 
     for (const q of [0.92, 0.85, 0.78, 0.7, 0.6, 0.5, 0.42, 0.35, 0.28, 0.22]) {
@@ -497,20 +516,19 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   async function busy(btn, label, job) {
     const old = btn.textContent; btn.disabled = true; btn.textContent = label; setStatus('');
-    try { 
-      await job(); 
-    } catch (err) { 
-      console.error(err); 
-      setStatus('Erro: ' + (err.message || 'Falha ao processar a imagem.'), true); 
-    } finally { 
-      btn.disabled = false; btn.textContent = old; 
+    try {
+      await job();
+    } catch (err) {
+      console.error(err);
+      setStatus('Erro: ' + (err.message || 'Falha ao processar a imagem.'), true);
+    } finally {
+      btn.disabled = false; btn.textContent = old;
     }
   }
 
   $('btn-download').addEventListener('click', () => {
-    // Validação Dinâmica
     let mandatoryFields = [];
-    
+
     if (currentMode === 'pessoal') {
       mandatoryFields = [
         { id: 'foto', label: 'Foto de perfil', isFile: true },
@@ -532,7 +550,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     mandatoryFields.forEach(field => {
       const el = $(field.id);
       el.classList.remove('input-error');
-      
+
       if (field.isFile) {
         if (!photo) {
           missing.push(field.label);
@@ -548,15 +566,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
     if (missing.length > 0) {
       setStatus('Preencha os campos obrigatórios em branco: ' + missing.join(', '), true);
-      return; 
+      return;
     }
 
     busy($('btn-download'), 'Gerando…', async () => {
       const canvas = await renderSignature();
       const blob = await compress(canvas);
-      
+
       if (!blob) {
-        throw new Error('O navegador bloqueou a geração do ficheiro. Verifique se o logo "coren_logo.png" está no mesmo diretório.');
+        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão no mesmo diretório.');
       }
 
       const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
@@ -578,16 +596,16 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   });
 
   $('btn-reset').addEventListener('click', () => {
-    $('form').reset(); 
-    photo = null; 
-    drawPhoto(); 
-    update(); 
+    $('form').reset();
+    photo = null;
+    drawPhoto();
+    update();
     setStatus('Campos limpos.');
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
   });
 
   // Inicialização
-  loadLogoAsDataURL();
+  loadImagesAsDataURL();
   drawPhoto();
   update();
 })();
