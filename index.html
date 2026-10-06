@@ -8,23 +8,36 @@
 <style>
 :root { --blue:#1e62a2; --blue-dark:#154a7d; --gray:#888b8d; --bg:#f1f4f8; --line:#d9e0e8; --text:#1c2733; --muted:#5d6b7a; }
 * { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body { margin:0; padding:24px 16px; font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--text); }
 .container { max-width:1200px; margin:auto; }
 header { margin-bottom:20px; }
 header h1 { margin:0 0 4px; font-size:24px; color:var(--blue); }
 header p { margin:0; color:var(--muted); }
-.layout { display:grid; grid-template-columns:minmax(300px,380px) 1fr; gap:24px; align-items:start; }
+.layout { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:24px; align-items:start; }
+.layout > * { min-width:0; }
 
-/* Responsividade do Formulário e Layout */
-@media (max-width:960px) { 
-  .layout { grid-template-columns:1fr; } 
+/* ===== Responsividade ===== */
+@media (max-width:960px) {
+  .layout { grid-template-columns:minmax(0,1fr); }
+  .preview-wrap { position:static !important; }
 }
-@media (max-width:480px) {
-  body { padding: 16px 10px; }
-  .sliders { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .actions { flex-direction: column; }
-  .btn { width: 100%; text-align: center; justify-content: center; }
+@media (max-width:600px) {
+  body { padding:14px 10px; }
+  header h1 { font-size:20px; }
+  header p { font-size:14px; }
+  .panel { padding:14px; }
+  .preview-scroll { padding:8px !important; }
+  /* 16px evita o zoom automático do iOS ao focar nos campos */
+  .field input[type=text], .field input[type=email], .field input[type=tel] { font-size:16px; padding:12px; }
+  .field label { font-size:14px; }
+  .field input[type=range] { height:32px; }
+  .sliders { grid-template-columns:1fr !important; gap:4px !important; }
+  .sliders label { font-size:13px; }
+  .actions { flex-direction:column; }
+  .btn { width:100%; min-height:48px; text-align:center; justify-content:center; }
 }
+/* ========================= */
 
 .panel { background:#fff; border:1px solid var(--line); border-radius:8px; padding:18px 20px; }
 fieldset { border:0; padding:0; margin:0 0 18px; }
@@ -45,7 +58,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .preview-wrap { position:sticky; top:16px; }
 .preview-title { margin:0 0 10px; font-size:16px; }
 .preview-scroll { 
-  overflow: hidden; /* Oculta a barra de deslocamento horizontal porque agora usamos escala dinâmica */
+  overflow: hidden; /* a assinatura é reduzida por escala, sem barra horizontal */
   padding: 16px; 
   background: repeating-conic-gradient(#f6f8fa 0 25%,#fff 0 50%) 0 0/16px 16px; 
   border: 1px dashed var(--line); 
@@ -56,6 +69,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .hint { margin:10px 0 0; font-size:12.5px; color:var(--muted); text-align: center;}
 
 /* ===== Assinatura 720 × 230 px ===== */
+.sig-scaler { flex:none; width:720px; height:230px; position:relative; }
+.sig { transform-origin:top left; }
 .sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; }
 .sig-top { display:block; width:720px; height:8px; }
 .sig-main { display:flex; align-items:center; gap:22px; padding:14px 26px; height:154px; }
@@ -128,6 +143,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     <section class="panel preview-wrap">
       <h2 class="preview-title">Pré-visualização</h2>
       <div class="preview-scroll" id="preview-container">
+        <div class="sig-scaler" id="sig-scaler">
         <div class="sig" id="signature">
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
@@ -152,6 +168,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
             <div class="sig-addr"><b>Centro Empresarial Apolônio Sales</b><br>Av. Conde da Boa Vista, Nº 800 - 9º Andar</div>
           </div>
           <div class="sig-base"></div>
+        </div>
         </div>
       </div>
       <div class="actions">
@@ -188,27 +205,21 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     }
   }
 
-  // ---- Dimensionamento Dinâmico para Ecrãs Pequenos (Mobile) ----
+  // ---- Dimensionamento dinâmico (mobile): reduz a assinatura para caber na tela ----
   const wrap = $('preview-container');
   const sig = $('signature');
-  const ro = new ResizeObserver(() => {
-    const padding = 32; // 16px esquerda + 16px direita da div preview-scroll
-    const availableW = wrap.clientWidth - padding;
-    
-    if (availableW < 720) {
-      const scale = availableW / 720;
-      sig.style.transform = `scale(${scale})`;
-      sig.style.transformOrigin = 'top left';
-      // Compensa a altura e a largura física que a assinatura continua a ocupar no ecrã
-      sig.style.marginBottom = `${230 * scale - 230}px`;
-      sig.style.marginRight = `${720 * scale - 720}px`;
-    } else {
-      sig.style.transform = 'none';
-      sig.style.marginBottom = '0';
-      sig.style.marginRight = '0';
-    }
-  });
-  ro.observe(wrap);
+  const scaler = $('sig-scaler');
+  function fitPreview() {
+    const cs = getComputedStyle(wrap);
+    const avail = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const scale = Math.min(1, avail / 720);
+    sig.style.transform = scale < 1 ? 'scale(' + scale + ')' : 'none';
+    scaler.style.width = (720 * scale) + 'px';
+    scaler.style.height = (230 * scale) + 'px';
+  }
+  new ResizeObserver(fitPreview).observe(wrap);
+  window.addEventListener('orientationchange', fitPreview);
+  fitPreview();
 
   // ---- Foto (recorte circular com zoom e deslocamento) ----
   function drawPhoto() {
@@ -304,10 +315,13 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       scale: 2, 
       useCORS: true, 
       backgroundColor: '#ffffff',
+      windowWidth: 1200,
       onclone: (clonedDoc) => {
         const clonedSig = clonedDoc.getElementById('signature');
+        const clonedScaler = clonedDoc.getElementById('sig-scaler');
         clonedSig.style.transform = 'none';
-        clonedSig.style.margin = '0';
+        clonedScaler.style.width = '720px';
+        clonedScaler.style.height = '230px';
       }
     });
     
@@ -368,7 +382,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   }
 
   function fileName() {
-    const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_\vert{}_$/g, '');
+    const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     return 'assinatura_coren' + (slug ? '_' + slug : '') + '.jpg';
   }
 
