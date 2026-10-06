@@ -82,7 +82,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .sig { width:720px; height:230px; overflow:hidden; background:#fff; font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; margin: 0 auto; }
 .sig-top { display:block; width:720px; height:8px; }
 .sig-main { display:flex; align-items:center; gap:22px; padding:14px 26px; height:154px; }
-.sig-photo { flex:none; width:116px; height:116px; border-radius:50%; border:5px solid #1e62a2; overflow:hidden; background:#fff; }
+/* A responsabilidade do círculo e da borda agora é 100% do Canvas */
+.sig-photo { flex:none; width:116px; height:116px; }
 .sig-photo canvas { width:100%; height:100%; display:block; }
 .sig-info { flex:1; min-width:0; border-left:2px solid #d9e0e8; padding-left:22px; }
 .sig-name { font-size:20px; font-weight:700; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -292,12 +293,21 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     update();
   }
 
-  // ---- Foto (recorte circular com zoom e deslocamento) ----
+  // ---- Foto com Anti-Aliasing (Suavização Nativa do Canvas) ----
   function drawPhoto() {
     ctx.clearRect(0, 0, S, S);
+    
+    // Preenche o fundo de branco puro para evitar transparência que gera artefatos
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); ctx.fill();
+
     ctx.save();
-    ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); ctx.clip();
-    ctx.fillStyle = '#e6ebf1'; ctx.fillRect(0, 0, S, S);
+    // Recorte interno um pouco menor para a borda cobrir as imperfeições e garantir borda 100% lisa
+    ctx.beginPath(); ctx.arc(S / 2, S / 2, (S / 2) - 9, 0, Math.PI * 2); ctx.clip();
+    
+    ctx.fillStyle = '#e6ebf1'; 
+    ctx.fillRect(0, 0, S, S);
+    
     if (photo) {
       const z = +$('zoom').value, ox = +$('px').value, oy = +$('py').value;
       const k = Math.max(S / photo.width, S / photo.height) * z;
@@ -309,6 +319,14 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       ctx.beginPath(); ctx.ellipse(S / 2, S * 0.88, S * 0.34, S * 0.27, 0, Math.PI, 0); ctx.fill();
     }
     ctx.restore();
+
+    // Desenha a borda azul DIRETAMENTE NO CANVAS (elimina o serrilhado do border-radius CSS)
+    // 18px aqui equivalem exatamente aos 5px na escala da pré-visualização final
+    ctx.lineWidth = 18;
+    ctx.strokeStyle = '#1e62a2';
+    ctx.beginPath(); 
+    ctx.arc(S / 2, S / 2, (S / 2) - 9, 0, Math.PI * 2); 
+    ctx.stroke();
   }
   
   $('foto').addEventListener('change', e => {
