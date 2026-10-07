@@ -1,35 +1,11 @@
-<?php
-// ---- Localiza o logo e o escudo em várias pastas comuns ----
-$candidatos = [
-    __DIR__ . '/coren_logo.png',
-    __DIR__ . '/assets/coren_logo.png',
-    __DIR__ . '/img/coren_logo.png',
-    __DIR__ . '/images/coren_logo.png',
-    __DIR__ . '/../coren_logo.png',
-];
-
-$logoPath = null;
-foreach ($candidatos as $c) {
-    if (is_readable($c)) { $logoPath = $c; break; }
-}
-
-$escudoPath = null;
-foreach ($candidatos as $c) {
-    $alt = str_replace('coren_logo.png', 'coren_escudo.png', $c);
-    if (is_readable($alt)) { $escudoPath = $alt; break; }
-}
-
-$logoBase64   = $logoPath   ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))   : '';
-$escudoBase64 = $escudoPath ? 'data:image/png;base64,' . base64_encode(file_get_contents($escudoPath)) : '';
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gerador de Assinatura de E-mail – Coren-PE</title>
-<link rel="icon" type="image/png" href="<?= $escudoBase64 ?>">
-<link rel="apple-touch-icon" href="<?= $escudoBase64 ?>">
+<link rel="icon" type="image/png" href="coren_escudo.png">
+<link rel="apple-touch-icon" href="coren_escudo.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root { --blue:#1e62a2; --blue-dark:#154a7d; --gray:#888b8d; --bg:#f1f4f8; --line:#d9e0e8; --text:#1c2733; --muted:#5d6b7a; }
@@ -37,25 +13,6 @@ $escudoBase64 = $escudoPath ? 'data:image/png;base64,' . base64_encode(file_get_
 html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body { margin:0; padding:24px 16px; font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--text); }
 .container { max-width:1200px; margin:auto; }
-
-/* ===== Avisos de diagnóstico ===== */
-.aviso-img {
-  background: #fff3cd;
-  border: 1px solid #ffe69c;
-  color: #664d03;
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-.aviso-img code {
-  background: #fff;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12.5px;
-  border: 1px solid #ffe69c;
-}
 
 /* ===== Cabeçalho ===== */
 header { display:flex; align-items:center; margin-bottom:32px; }
@@ -129,7 +86,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   accent-color: var(--blue);
   cursor: pointer;
 }
-/* Estado marcado: realça o bloco inteiro (classe aplicada via JS) */
 .checkbox-line.is-checked {
   background: #d6e8f8;
   border-color: var(--blue);
@@ -231,25 +187,8 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 </head>
 <body>
 <div class="container">
-
-  <?php if (!$logoBase64): ?>
-    <div class="aviso-img">
-      <b>⚠️ Arquivo <code>coren_logo.png</code> não encontrado.</b><br>
-      Pasta atual do PHP: <code><?= htmlspecialchars(__DIR__) ?></code><br>
-      Arquivos na pasta: <code><?= htmlspecialchars(implode(', ', array_map('basename', glob(__DIR__ . '/*'))) ?: '(vazio ou sem permissão)') ?></code><br>
-      Coloque o <code>coren_logo.png</code> na mesma pasta que este <code>index.php</code> ou ajuste o array <code>$candidatos</code> no topo do arquivo.
-    </div>
-  <?php endif; ?>
-
-  <?php if (!$escudoBase64): ?>
-    <div class="aviso-img">
-      <b>⚠️ Arquivo <code>coren_escudo.png</code> não encontrado.</b>
-      A marca d'água e o favicon não vão aparecer.
-    </div>
-  <?php endif; ?>
-
   <header>
-    <img id="logo-header" src="<?= $logoBase64 ?>" alt="Coren-PE" class="header-logo">
+    <img id="logo-header" src="coren_logo.png" alt="Coren-PE" class="header-logo">
     <h1>Gerador de assinatura de e-mail</h1>
   </header>
 
@@ -325,7 +264,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       <h2 class="preview-title">Pré-visualização</h2>
       <div class="preview-scroll" id="preview-container">
         <div class="sig" id="signature">
-          <img id="watermark-escudo" class="sig-watermark" src="<?= $escudoBase64 ?>" alt="" aria-hidden="true">
+          <img id="watermark-escudo" class="sig-watermark" src="coren_escudo.png" alt="" aria-hidden="true">
 
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
@@ -346,7 +285,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
             </div>
           </div>
           <div class="sig-foot">
-            <img id="logo-coren" src="<?= $logoBase64 ?>" alt="Coren-PE – Conselho Regional de Enfermagem de Pernambuco">
+            <img id="logo-coren" src="coren_logo.png" crossorigin="anonymous" alt="Coren-PE – Conselho Regional de Enfermagem de Pernambuco">
             <div class="sig-addr"><b>Centro Empresarial Apolônio Sales</b><br>Av. Conde da Boa Vista, Nº 800 - 9º Andar</div>
           </div>
           <div class="sig-base"></div>
@@ -369,6 +308,36 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   let photo = null;
   let currentMode = 'pessoal';
   let semFoto = false;
+
+  // ---- Converte uma imagem em dataURL (evita canvas tainting) ----
+  async function fetchAsDataURL(url) {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' em ' + url);
+    const blob = await res.blob();
+    return new Promise((ok, no) => {
+      const fr = new FileReader();
+      fr.onload = () => ok(fr.result);
+      fr.onerror = no;
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  // ---- Carrega logo (topo + rodapé) e escudo (marca d'água) como base64 ----
+  async function loadImagesAsDataURL() {
+    try {
+      const logoURL = await fetchAsDataURL('coren_logo.png');
+      $('logo-coren').src = logoURL;
+      $('logo-header').src = logoURL;
+    } catch (e) {
+      console.warn('Não foi possível embutir coren_logo.png como base64 — usando caminho direto.', e);
+    }
+    try {
+      const escudoURL = await fetchAsDataURL('coren_escudo.png');
+      $('watermark-escudo').src = escudoURL;
+    } catch (e) {
+      console.warn('Não foi possível embutir coren_escudo.png como base64 — usando caminho direto.', e);
+    }
+  }
 
   // ---- Alternância de Modo ----
   $('btn-pessoal').addEventListener('click', () => setMode('pessoal'));
@@ -414,7 +383,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     $('foto-controls').style.pointerEvents = semFoto ? 'none' : 'auto';
     $('req-foto').style.display = semFoto ? 'none' : 'inline';
 
-    // Realça visualmente o bloco inteiro quando marcado
     e.target.closest('.checkbox-line').classList.toggle('is-checked', semFoto);
 
     if (semFoto) {
@@ -683,7 +651,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       const blob = await compress(canvas);
 
       if (!blob) {
-        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão na pasta correta.');
+        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão na mesma pasta que este HTML.');
       }
 
       const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
@@ -724,6 +692,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   });
 
   // Inicialização
+  loadImagesAsDataURL();
   drawPhoto();
   update();
 })();
