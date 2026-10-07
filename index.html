@@ -1,12 +1,25 @@
+<?php
+// Lê as imagens do mesmo diretório e converte para base64
+$logoPath   = __DIR__ . '/coren_logo.png';
+$escudoPath = __DIR__ . '/coren_escudo.png';
+
+$logoBase64 = file_exists($logoPath)
+    ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))
+    : '';
+
+$escudoBase64 = file_exists($escudoPath)
+    ? 'data:image/png;base64,' . base64_encode(file_get_contents($escudoPath))
+    : '';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gerador de Assinatura de E-mail – Coren-PE</title>
-<link rel="icon" type="image/png" href="coren_escudo.png">
-<link rel="apple-touch-icon" href="coren_escudo.png">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="icon" type="image/png" href="<?= $escudoBase64 ?>">
+<link rel="apple-touch-icon" href="<?= $escudoBase64 ?>">
+<script src="html2canvas.min.js"></script>
 <style>
 :root { --blue:#1e62a2; --blue-dark:#154a7d; --gray:#888b8d; --bg:#f1f4f8; --line:#d9e0e8; --text:#1c2733; --muted:#5d6b7a; }
 * { box-sizing:border-box; }
@@ -57,6 +70,27 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
 
+/* Checkbox "sem foto" */
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-line input[type=checkbox] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+#foto-controls { transition: opacity 0.2s; }
+
 .mode-toggle { display: flex; gap: 8px; margin-bottom: 20px; background: #e3e8ee; padding: 4px; border-radius: 6px; }
 .mode-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; border-radius: 4px; font-size:14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s; }
 .mode-btn.active { background: #fff; color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -80,7 +114,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .sig {
   width:720px; height:230px; overflow:hidden; background:#fff;
   font-family:Arial,Helvetica,sans-serif; color:#12304d; flex:none; margin: 0 auto;
-  position: relative; /* <- necessário para ancorar a marca d'água */
+  position: relative;
 }
 
 /* Marca d'água: escudo do Coren-PE ao fundo da ASSINATURA */
@@ -91,7 +125,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   transform: translateY(-50%);
   width: 120px;
   height: auto;
-  opacity: 0.09;
+  opacity: 0.07;
   pointer-events: none;
   user-select: none;
   z-index: 0;
@@ -100,8 +134,10 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 /* No modo Setor, o escudo vai mais para o centro */
 .sig.sig-setor .sig-watermark {
   right: auto;
-  left: 65%;
+  left: 50%;
   transform: translate(-50%, -50%);
+  width: 140px;
+  opacity: 0.09;
 }
 
 /* Todo o conteúdo da assinatura fica acima da marca d'água */
@@ -127,10 +163,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 .sig-addr b { color:#12304d; }
 .sig-base { height:6px; background:#12304d; }
 
+/* Modo Setor */
 .sig.sig-setor .sig-photo { display: none; }
 .sig.sig-setor .sig-info { border-left: none; padding-left: 0; }
 .sig.sig-setor .sig-name { font-size: 26px; color: var(--blue-dark); margin-bottom: 6px; }
 .sig.sig-setor .sig-role { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; }
+
+/* Modo Sem Foto */
+.sig.sig-sem-foto .sig-photo { display: none; }
+.sig.sig-sem-foto .sig-info  { border-left: none; padding-left: 0; }
 /* ===================== */
 
 .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
@@ -146,7 +187,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 <body>
 <div class="container">
   <header>
-    <img id="logo-header" src="coren_logo.png" alt="Coren-PE" class="header-logo">
+    <img id="logo-header" src="<?= $logoBase64 ?>" alt="Coren-PE" class="header-logo">
     <h1>Gerador de assinatura de e-mail</h1>
   </header>
 
@@ -160,15 +201,23 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
       <fieldset id="fs-foto">
         <legend>Foto</legend>
-        <div class="field">
-          <label for="foto">Foto de perfil <span class="req">*</span></label>
-          <input type="file" id="foto" accept="image/*">
+
+        <div id="foto-controls">
+          <div class="field">
+            <label for="foto">Foto de perfil <span class="req" id="req-foto">*</span></label>
+            <input type="file" id="foto" accept="image/*">
+          </div>
+          <div class="sliders">
+            <div class="field"><label for="zoom">Zoom</label><input type="range" id="zoom" min="1" max="3" step="0.05" value="1"></div>
+            <div class="field"><label for="px">Horizontal</label><input type="range" id="px" min="-1" max="1" step="0.02" value="0"></div>
+            <div class="field"><label for="py">Vertical</label><input type="range" id="py" min="-1" max="1" step="0.02" value="0"></div>
+          </div>
         </div>
-        <div class="sliders">
-          <div class="field"><label for="zoom">Zoom</label><input type="range" id="zoom" min="1" max="3" step="0.05" value="1"></div>
-          <div class="field"><label for="px">Horizontal</label><input type="range" id="px" min="-1" max="1" step="0.02" value="0"></div>
-          <div class="field"><label for="py">Vertical</label><input type="range" id="py" min="-1" max="1" step="0.02" value="0"></div>
-        </div>
+
+        <label class="checkbox-line" for="sem-foto">
+          <input type="checkbox" id="sem-foto">
+          Prefiro gerar a assinatura sem foto
+        </label>
       </fieldset>
 
       <fieldset>
@@ -214,8 +263,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       <h2 class="preview-title">Pré-visualização</h2>
       <div class="preview-scroll" id="preview-container">
         <div class="sig" id="signature">
-          <!-- Marca d'água: escudo do Coren-PE ao fundo da assinatura -->
-          <img id="watermark-escudo" class="sig-watermark" src="coren_escudo.png" alt="" aria-hidden="true">
+          <img id="watermark-escudo" class="sig-watermark" src="<?= $escudoBase64 ?>" alt="" aria-hidden="true">
 
           <svg class="sig-top" viewBox="0 0 720 8" xmlns="http://www.w3.org/2000/svg">
             <rect width="720" height="8" fill="#888b8d"/>
@@ -236,7 +284,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
             </div>
           </div>
           <div class="sig-foot">
-            <img id="logo-coren" src="coren_logo.png" crossorigin="anonymous" alt="Coren-PE – Conselho Regional de Enfermagem de Pernambuco">
+            <img id="logo-coren" src="<?= $logoBase64 ?>" alt="Coren-PE – Conselho Regional de Enfermagem de Pernambuco">
             <div class="sig-addr"><b>Centro Empresarial Apolônio Sales</b><br>Av. Conde da Boa Vista, Nº 800 - 9º Andar</div>
           </div>
           <div class="sig-base"></div>
@@ -258,36 +306,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   const cv = $('photo-canvas'), ctx = cv.getContext('2d'), S = cv.width;
   let photo = null;
   let currentMode = 'pessoal';
-
-  // ---- Converte uma URL em dataURL (para evitar canvas tainting) ----
-  async function fetchAsDataURL(url) {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' em ' + url);
-    const blob = await res.blob();
-    return new Promise((ok, no) => {
-      const fr = new FileReader();
-      fr.onload = () => ok(fr.result);
-      fr.onerror = no;
-      fr.readAsDataURL(blob);
-    });
-  }
-
-  // ---- Carrega logo (topo + rodapé) e escudo (marca d'água) como base64 ----
-  async function loadImagesAsDataURL() {
-    try {
-      const logoURL = await fetchAsDataURL('coren_logo.png');
-      $('logo-coren').src = logoURL;
-      $('logo-header').src = logoURL;
-    } catch (e) {
-      console.warn('Não foi possível embutir coren_logo.png como base64.', e);
-    }
-    try {
-      const escudoURL = await fetchAsDataURL('coren_escudo.png');
-      $('watermark-escudo').src = escudoURL;
-    } catch (e) {
-      console.warn('Não foi possível embutir coren_escudo.png como base64. A marca d\'água pode ficar ausente.', e);
-    }
-  }
+  let semFoto = false;
 
   // ---- Alternância de Modo ----
   $('btn-pessoal').addEventListener('click', () => setMode('pessoal'));
@@ -322,6 +341,26 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     setStatus('');
     update();
   }
+
+  // ---- Checkbox "sem foto" ----
+  $('sem-foto').addEventListener('change', e => {
+    semFoto = e.target.checked;
+
+    $('foto').disabled = semFoto;
+    ['zoom', 'px', 'py'].forEach(id => $(id).disabled = semFoto);
+    $('foto-controls').style.opacity = semFoto ? '0.4' : '1';
+    $('foto-controls').style.pointerEvents = semFoto ? 'none' : 'auto';
+    $('req-foto').style.display = semFoto ? 'none' : 'inline';
+
+    if (semFoto) {
+      $('foto').value = '';
+      photo = null;
+      $('foto').classList.remove('input-error');
+      drawPhoto();
+    }
+
+    $('signature').classList.toggle('sig-sem-foto', semFoto);
+  });
 
   // ---- Foto ----
   function drawPhoto() {
@@ -510,7 +549,10 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
   function fileName() {
     const slug = $('nome').value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    const prefix = currentMode === 'setor' ? 'assinatura_setor_' : 'assinatura_coren_';
+    let prefix;
+    if (currentMode === 'setor') prefix = 'assinatura_setor_';
+    else if (semFoto) prefix = 'assinatura_coren_semfoto_';
+    else prefix = 'assinatura_coren_';
     return prefix + (slug ? slug : 'nova') + '.jpg';
   }
 
@@ -531,13 +573,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 
     if (currentMode === 'pessoal') {
       mandatoryFields = [
-        { id: 'foto', label: 'Foto de perfil', isFile: true },
         { id: 'nome', label: 'Nome' },
         { id: 'cargo', label: 'Cargo ou função' },
         { id: 'dept', label: 'Departamento' },
         { id: 'registro', label: 'Matrícula' },
         { id: 'email', label: 'E-mail' }
       ];
+      if (!semFoto) {
+        mandatoryFields.unshift({ id: 'foto', label: 'Foto de perfil', isFile: true });
+      }
     } else {
       mandatoryFields = [
         { id: 'nome', label: 'Nome do Setor' },
@@ -574,7 +618,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       const blob = await compress(canvas);
 
       if (!blob) {
-        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão no mesmo diretório.');
+        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão na mesma pasta que o index.php.');
       }
 
       const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
@@ -598,6 +642,15 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   $('btn-reset').addEventListener('click', () => {
     $('form').reset();
     photo = null;
+    semFoto = false;
+
+    $('foto').disabled = false;
+    ['zoom', 'px', 'py'].forEach(id => $(id).disabled = false);
+    $('foto-controls').style.opacity = '1';
+    $('foto-controls').style.pointerEvents = 'auto';
+    $('req-foto').style.display = 'inline';
+    $('signature').classList.remove('sig-sem-foto');
+
     drawPhoto();
     update();
     setStatus('Campos limpos.');
@@ -605,7 +658,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
   });
 
   // Inicialização
-  loadImagesAsDataURL();
   drawPhoto();
   update();
 })();
