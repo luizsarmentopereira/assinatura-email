@@ -1,15 +1,26 @@
 <?php
-// Lê as imagens do mesmo diretório e converte para base64
-$logoPath   = __DIR__ . '/coren_logo.png';
-$escudoPath = __DIR__ . '/coren_escudo.png';
+// ---- Localiza o logo e o escudo em várias pastas comuns ----
+$candidatos = [
+    __DIR__ . '/coren_logo.png',
+    __DIR__ . '/assets/coren_logo.png',
+    __DIR__ . '/img/coren_logo.png',
+    __DIR__ . '/images/coren_logo.png',
+    __DIR__ . '/../coren_logo.png',
+];
 
-$logoBase64 = file_exists($logoPath)
-    ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))
-    : '';
+$logoPath = null;
+foreach ($candidatos as $c) {
+    if (is_readable($c)) { $logoPath = $c; break; }
+}
 
-$escudoBase64 = file_exists($escudoPath)
-    ? 'data:image/png;base64,' . base64_encode(file_get_contents($escudoPath))
-    : '';
+$escudoPath = null;
+foreach ($candidatos as $c) {
+    $alt = str_replace('coren_logo.png', 'coren_escudo.png', $c);
+    if (is_readable($alt)) { $escudoPath = $alt; break; }
+}
+
+$logoBase64   = $logoPath   ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))   : '';
+$escudoBase64 = $escudoPath ? 'data:image/png;base64,' . base64_encode(file_get_contents($escudoPath)) : '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -19,13 +30,32 @@ $escudoBase64 = file_exists($escudoPath)
 <title>Gerador de Assinatura de E-mail – Coren-PE</title>
 <link rel="icon" type="image/png" href="<?= $escudoBase64 ?>">
 <link rel="apple-touch-icon" href="<?= $escudoBase64 ?>">
-<script src="html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root { --blue:#1e62a2; --blue-dark:#154a7d; --gray:#888b8d; --bg:#f1f4f8; --line:#d9e0e8; --text:#1c2733; --muted:#5d6b7a; }
 * { box-sizing:border-box; }
 html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 body { margin:0; padding:24px 16px; font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--text); }
 .container { max-width:1200px; margin:auto; }
+
+/* ===== Avisos de diagnóstico ===== */
+.aviso-img {
+  background: #fff3cd;
+  border: 1px solid #ffe69c;
+  color: #664d03;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.aviso-img code {
+  background: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  border: 1px solid #ffe69c;
+}
 
 /* ===== Cabeçalho ===== */
 header { display:flex; align-items:center; margin-bottom:32px; }
@@ -70,24 +100,40 @@ legend { font-weight:700; font-size:15px; padding:0 0 8px; margin-bottom:10px; w
 .sliders label { font-weight:500; color:var(--muted); font-size:12px; }
 input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-offset:1px; }
 
-/* Checkbox "sem foto" */
+/* ===== Checkbox "sem foto" — bloco destacado ===== */
 .checkbox-line {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--blue-dark);
   cursor: pointer;
   user-select: none;
+  background: #eaf2fa;
+  border: 1.5px solid #c5d8ec;
+  border-radius: 6px;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.checkbox-line:hover {
+  background: #dceaf8;
+  border-color: #9cc4ea;
 }
 .checkbox-line input[type=checkbox] {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   margin: 0;
+  flex: none;
   accent-color: var(--blue);
   cursor: pointer;
+}
+/* Estado marcado: realça o bloco inteiro (classe aplicada via JS) */
+.checkbox-line.is-checked {
+  background: #d6e8f8;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(30, 98, 162, 0.12);
 }
 #foto-controls { transition: opacity 0.2s; }
 
@@ -172,7 +218,6 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 /* Modo Sem Foto */
 .sig.sig-sem-foto .sig-photo { display: none; }
 .sig.sig-sem-foto .sig-info  { border-left: none; padding-left: 0; }
-/* ===================== */
 
 .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
 .btn { background:var(--blue); color:#fff; border:0; padding:11px 18px; cursor:pointer; font-size:15px; border-radius:5px; font-weight:600; transition: background 0.2s; }
@@ -186,6 +231,23 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
 </head>
 <body>
 <div class="container">
+
+  <?php if (!$logoBase64): ?>
+    <div class="aviso-img">
+      <b>⚠️ Arquivo <code>coren_logo.png</code> não encontrado.</b><br>
+      Pasta atual do PHP: <code><?= htmlspecialchars(__DIR__) ?></code><br>
+      Arquivos na pasta: <code><?= htmlspecialchars(implode(', ', array_map('basename', glob(__DIR__ . '/*'))) ?: '(vazio ou sem permissão)') ?></code><br>
+      Coloque o <code>coren_logo.png</code> na mesma pasta que este <code>index.php</code> ou ajuste o array <code>$candidatos</code> no topo do arquivo.
+    </div>
+  <?php endif; ?>
+
+  <?php if (!$escudoBase64): ?>
+    <div class="aviso-img">
+      <b>⚠️ Arquivo <code>coren_escudo.png</code> não encontrado.</b>
+      A marca d'água e o favicon não vão aparecer.
+    </div>
+  <?php endif; ?>
+
   <header>
     <img id="logo-header" src="<?= $logoBase64 ?>" alt="Coren-PE" class="header-logo">
     <h1>Gerador de assinatura de e-mail</h1>
@@ -351,6 +413,9 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     $('foto-controls').style.opacity = semFoto ? '0.4' : '1';
     $('foto-controls').style.pointerEvents = semFoto ? 'none' : 'auto';
     $('req-foto').style.display = semFoto ? 'none' : 'inline';
+
+    // Realça visualmente o bloco inteiro quando marcado
+    e.target.closest('.checkbox-line').classList.toggle('is-checked', semFoto);
 
     if (semFoto) {
       $('foto').value = '';
@@ -618,7 +683,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
       const blob = await compress(canvas);
 
       if (!blob) {
-        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão na mesma pasta que o index.php.');
+        throw new Error('O navegador bloqueou a geração do arquivo. Verifique se os arquivos "coren_logo.png" e "coren_escudo.png" estão na pasta correta.');
       }
 
       const kb = (blob.size / 1024).toFixed(1).replace('.', ',');
@@ -650,6 +715,7 @@ input:focus-visible, button:focus-visible { outline:3px solid #9cc4ea; outline-o
     $('foto-controls').style.pointerEvents = 'auto';
     $('req-foto').style.display = 'inline';
     $('signature').classList.remove('sig-sem-foto');
+    document.querySelector('.checkbox-line').classList.remove('is-checked');
 
     drawPhoto();
     update();
